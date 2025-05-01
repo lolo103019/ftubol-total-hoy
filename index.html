@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fútbol Total Hoy</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.dark-mode {
+      background-color: #121212;
+      color: #ffffff;
+    }
+    header {
+      background-color: #1a1a1a;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      background-color: #333;
+    }
+    nav a {
+      color: white;
+      padding: 14px 20px;
+      text-decoration: none;
+      display: block;
+    }
+    nav a:hover {
+      background-color: #575757;
+    }
+    .content {
+      padding: 20px;
+    }
+    .match {
+      background-color: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    body.dark-mode .match {
+      background-color: #1e1e1e;
+    }
+    .match h3 {
+      margin-top: 0;
+    }
+    .btn-ver {
+      display: inline-block;
+      background-color: #28a745;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 5px;
+      text-decoration: none;
+    }
+    .btn-ver:hover {
+      background-color: #218838;
+    }
+    .search-box {
+      text-align: center;
+      margin: 20px;
+    }
+    .search-box input {
+      padding: 10px;
+      width: 80%;
+      max-width: 400px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .dark-toggle {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background-color: #444;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <button class="dark-toggle" onclick="toggleDarkMode()">🌙 Modo oscuro</button>
+
+  <header>
+    <h1>Fútbol Total Hoy</h1>
+    <p>Partidos, noticias y más</p>
+  </header>
+
+  <nav>
+    <a href="#inicio">Inicio</a>
+    <a href="#calendario">Calendario</a>
+    <a href="#noticias">Noticias</a>
+  </nav>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Buscar partido o equipo..." onkeyup="buscarPartido()">
+  </div>
+
+  <div class="content" id="content">
+    <section id="inicio">
+      <h2>Partidos del día (Ejemplo)</h2>
+      <div id="matches-container">Cargando partidos...</div>
+    </section>
+
+    <section id="calendario">
+      <h2>Calendario de la semana</h2>
+      <p>Próximos partidos y eventos deportivos.</p>
+    </section>
+
+    <section id="noticias">
+      <h2>Últimas noticias</h2>
+      <p>No hay noticias nuevas por ahora.</p>
+    </section>
+  </div>
+
+  <script>
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+    }
+
+    function buscarPartido() {
+      const input = document.getElementById('searchInput').value.toLowerCase();
+      const partidos = document.querySelectorAll('.match');
+      partidos.forEach(partido => {
+        const texto = partido.textContent.toLowerCase();
+        partido.style.display = texto.includes(input) ? 'block' : 'none';
+      });
+    }
+
+    // Llamada a la API real con tu API Key
+    const container = document.getElementById("matches-container");
+    container.innerHTML = "Cargando partidos reales...";
+
+    fetch("https://v3.football.api-sports.io/fixtures?date=" + new Date().toISOString().split("T")[0], {
+      method: "GET",
+      headers: {
+        "x-apisports-key": "a50ea097aa3c8b8b56238bff4fa401bd"
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      container.innerHTML = "";
+      data.response.forEach(fixture => {
+        const div = document.createElement("div");
+        div.className = "match";
+        div.innerHTML = `
+          <h3>${fixture.teams.home.name} vs ${fixture.teams.away.name}</h3>
+          <p>Liga: ${fixture.league.name}</p>
+          <p>Hora: ${fixture.fixture.date.split("T")[1].slice(0, 5)}</p>
+          <a class="btn-ver" href="#" target="_blank">Ver partido</a>
+        `;
+        container.appendChild(div);
+      });
+    })
+    .catch(err => {
+      console.error(err);
+      container.innerHTML = "No se pudieron cargar los partidos.";
+    });
+  </script>
+</body>
+</html>
